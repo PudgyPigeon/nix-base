@@ -9,7 +9,7 @@
     experimental-features = [ "nix-command" "flakes" ];
     max-jobs = "auto";
     require-sigs = true;
-    sandbox = true;
+    # sandbox = true;
     sandbox-fallback = false;
     substituters = [ "https://cache.nixos.org/" ];
     system-features = [ "nixos-test" "benchmark" "big-parallel" "kvm" ];
