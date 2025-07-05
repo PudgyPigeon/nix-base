@@ -20,6 +20,8 @@ let
   configurationModule = ./configuration.nix;
   nixSettingsModule = ../../modules/nix-settings.nix;
   wslModule = inputs.nixos-wsl.nixosModules.default;
+  homeManagerModule = inputs.home-manager.nixosModules.home-manager;
+  wslHomeManagerConfigModule = import ../../home/nixos-wsl.nix { username = "nixos"; };
 
   # Inline WSL-specific settings
   wslSettingsModule = { pkgs, config, ... }: {
@@ -37,6 +39,8 @@ let
       nixSettingsModule
       wslModule
       wslSettingsModule
+      homeManagerModule
+      wslHomeManagerConfigModule
     ];
   };
 
