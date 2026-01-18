@@ -9,8 +9,13 @@
         programs.ssh = {
           enable = true;
           extraConfig = ''
-            AddKeysToAgent yes
-            IdentityFile ~/.ssh/github_id_ssh_key
+            # GitHub-specific settings
+            Host github.com
+              HostName github.com
+              User git
+              IdentityFile ~/.ssh/github_id_ssh_key
+              AddKeysToAgent yes
+
           '';
         };
       };
