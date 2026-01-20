@@ -16,6 +16,17 @@ let
     helixPkg
   ];
 
+  # GPU + audio packages for WSL2 graphics/audio support
+  gpuAndAudioPackages = with pkgs; [
+    mesa
+    vulkan-loader
+    vulkan-tools
+    libGL
+    pulseaudio
+    pipewire
+  ];
+
+
   # Import modules as named variables
   configurationModule = ./configuration.nix;
   nixSettingsModule = ../../modules/nix-settings.nix;
@@ -27,8 +38,9 @@ let
   wslSettingsModule = { pkgs, config, ... }: {
     system.stateVersion = "24.11";
     wsl.enable = true;
-    environment.systemPackages = commonPackages;
+    environment.systemPackages = commonPackages ++ gpuAndAudioPackages;
   };
+
   
   nixosSystemInstance = inputs.nixpkgs.lib.nixosSystem {
     inherit system;
