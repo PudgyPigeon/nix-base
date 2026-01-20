@@ -7,7 +7,7 @@ let
   # Custom packages to install
   commonPackages = with pkgs; [
     git
-    vim
+    vim 
     neovim
     wget
     go
@@ -24,8 +24,8 @@ let
     libGL
     pulseaudio
     pipewire
+    xorg.xhost
   ];
-
 
   # Import modules as named variables
   configurationModule = ./configuration.nix;
@@ -38,6 +38,7 @@ let
   wslSettingsModule = { pkgs, config, ... }: {
     system.stateVersion = "24.11";
     wsl.enable = true;
+    hardware.opengl.enable = true; # Add OpenGL hardware support here
     environment.systemPackages = commonPackages ++ gpuAndAudioPackages;
   };
 
