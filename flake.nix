@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
-    helix.url = "github:helix-editor/helix/master";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -15,7 +14,6 @@
       system = "x86_64-linux";
       pkgs = inputs.nixpkgs.legacyPackages.${system};
       wslModule = inputs.nixos-wsl.nixosModules.default;
-      helixPkg = inputs.helix.packages.${system}.default;
 
       # Import host configuration as named variable
       hostConfigs = import ./hosts/system-map.nix { inherit inputs system; };

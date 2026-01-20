@@ -2,30 +2,6 @@
 
 let
   pkgs = inputs.nixpkgs.legacyPackages.${system};
-  helixPkg = inputs.helix.packages.${system}.default;
-
-  # Custom packages to install
-  commonPackages = with pkgs; [
-    git
-    vim 
-    neovim
-    wget
-    go
-    gotools
-    golangci-lint
-    helixPkg
-  ];
-
-  # GPU + audio packages for WSL2 graphics/audio support
-  gpuAndAudioPackages = with pkgs; [
-    mesa
-    vulkan-loader
-    vulkan-tools
-    libGL
-    pulseaudio
-    pipewire
-    xorg.xhost
-  ];
 
   # Import modules as named variables
   configurationModule = ./configuration.nix;
@@ -38,10 +14,7 @@ let
   wslSettingsModule = { pkgs, config, ... }: {
     system.stateVersion = "24.11";
     wsl.enable = true;
-    hardware.opengl.enable = true; # Add OpenGL hardware support here
-    environment.systemPackages = commonPackages ++ gpuAndAudioPackages;
   };
-
   
   nixosSystemInstance = inputs.nixpkgs.lib.nixosSystem {
     inherit system;
@@ -50,7 +23,7 @@ let
     modules = [
       configurationModule
       nixSettingsModule
-      wslModule
+      wslModule 
       wslSettingsModule
       homeManagerModule
       wslHomeManagerConfigModule

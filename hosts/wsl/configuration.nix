@@ -2,7 +2,6 @@
 
 let
   isWSL = builtins.pathExists "/proc/sys/fs/binfmt_misc/WSLInterop";
-  helixPkg = inputs.helix.packages."${pkgs.system}".helix;
 in {
   system.stateVersion = "24.11";
 
@@ -17,6 +16,9 @@ in {
   # Flakes support
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Allow unfree packages (needed for nvidia-x11)
+  nixpkgs.config.allowUnfree = true;
+
   # Docker setup
   virtualisation.docker = {
     enable = true;
@@ -24,7 +26,37 @@ in {
       enable = true;
       setSocketVariable = true;
     };
+    # daemon.settings.features.cdi = true;
+    # daemon.settings.cdi-spec-dirs = [ "/etc/cdi" ];
   };
+
+  # NVIDIA GPU passthrough + CUDA
+  hardware.graphics.enable = true;
+  # hardware.enableRedistributableFirmware = lib.mkDefault true;
+  hardware.graphics.extraPackages = with pkgs; [
+    mesa
+    vulkan-loader
+    vulkan-tools
+    # libGL
+    # libdrm
+  ];
+  # hardware.nvidia.open = true;
+
+  environment.sessionVariables = {
+    # CUDA_PATH = "${pkgs.cudatoolkit}";
+    # EXTRA_LDFLAGS = "-L/lib -L${pkgs.linuxPackages.nvidia_x11}/lib";
+    # EXTRA_CCFLAGS = "-I/usr/include";
+    # MESA_D3D12_DEFAULT_ADAPTER_NAME = "Nvidia";
+    # LD_LIBRARY_PATH = [
+    #   "/usr/lib/wsl/lib"
+    #   "${pkgs.linuxPackages.nvidia_x11}/lib"
+    #   "${pkgs.ncurses5}/lib"
+    # ];
+    # Force WSLg compositor runtime
+    XDG_RUNTIME_DIR = "/mnt/wslg/runtime-dir";
+    WAYLAND_DISPLAY = "wayland-0";
+  };
+
 
   users.users.nixos.extraGroups = [ "docker" ];
 
@@ -36,4 +68,19 @@ in {
     enable = true;
     package = pkgs.nix-ld-rs;
   };
+
+  # Packages
+  environment.systemPackages = with pkgs; [
+    git 
+    vim 
+    neovim 
+    wget
+    go 
+    gotools 
+    golangci-lint
+    vulkan-tools
+    pulseaudio 
+    pipewire 
+    xorg.xhost
+  ];
 }
