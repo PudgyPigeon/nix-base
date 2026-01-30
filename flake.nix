@@ -6,6 +6,7 @@
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    helix.url = "github:helix-editor/helix/master";
   };
 
   outputs = inputs:
@@ -13,6 +14,7 @@
       # Set system and other packages
       system = "x86_64-linux";
       pkgs = inputs.nixpkgs.legacyPackages.${system};
+      helixPkg = inputs.helix.packages.${system}.default;
       wslModule = inputs.nixos-wsl.nixosModules.default;
 
       # Import host configuration as named variable

@@ -2,6 +2,7 @@
 
 let
   pkgs = inputs.nixpkgs.legacyPackages.${system};
+  helixPkg = inputs.helix.packages.${system}.default;
 
   # Import modules as named variables
   configurationModule = ./configuration.nix;

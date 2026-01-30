@@ -2,6 +2,7 @@
 
 let
   isWSL = builtins.pathExists "/proc/sys/fs/binfmt_misc/WSLInterop";
+  helixPkg = inputs.helix.packages."${pkgs.system}".helix;
 in {
   system.stateVersion = "24.11";
 
@@ -14,6 +15,7 @@ in {
     enable = lib.mkIf isWSL true;
     defaultUser = lib.mkIf isWSL "nixos";
     useWindowsDriver = true;
+    interop.register = true;
   };
   users.users.nixos.extraGroups = [ "docker" ];
   boot.isContainer = lib.mkIf isWSL true;
@@ -36,9 +38,16 @@ in {
     enable = true;
     extraPackages = with pkgs; [
       mesa
+      mesa.drivers
       vulkan-loader
       vulkan-tools
     ];
+  };
+  # This maps the WSLg Wayland/Pulse audio into NixOS
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    pulse.enable = true;
   };
 
   programs.nix-ld = {
@@ -61,8 +70,10 @@ in {
     # 2. Session-wide Variables (Best for WSL/GPU paths)
     sessionVariables = {
       LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
+      # LD_LIBRARY_PATH = "/usr/lib/wsl/lib:/run/opengl-driver/lib:$LD_LIBRARY_PATH";
       XDG_RUNTIME_DIR = "/mnt/wslg/runtime-dir";
       WAYLAND_DISPLAY = "wayland-0";
+      # WGPU_BACKEND = "gl";
       MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";
     };
     # 3. System-wide Packages
@@ -79,6 +90,7 @@ in {
       pipewire 
       xorg.xhost
       glxinfo
+      helixPkg
     ];
   };
 }
