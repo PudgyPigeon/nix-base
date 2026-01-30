@@ -2,95 +2,93 @@
 
 let
   isWSL = builtins.pathExists "/proc/sys/fs/binfmt_misc/WSLInterop";
-  helixPkg = inputs.helix.packages."${pkgs.system}".helix;
+  helixPkg = inputs.helix.packages.${pkgs.system}.helix;
+
+  # Common package sets
+  commonPackages = with pkgs; [
+    git vim neovim wget
+    go gotools golangci-lint
+    vulkan-tools pulseaudio pipewire
+    xorg.xhost glxinfo
+    helixPkg
+  ];
+
+  graphicsPackages = with pkgs; [
+    mesa mesa.drivers
+    vulkan-loader vulkan-tools
+  ];
+
+  nixLdLibs = with pkgs; [
+    stdenv.cc.cc
+    mesa
+    libglvnd
+  ];
 in {
   system.stateVersion = "24.11";
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
-  
-  imports = lib.optional isWSL nixos-wsl;
 
-  wsl = {
-    enable = lib.mkIf isWSL true;
-    defaultUser = lib.mkIf isWSL "nixos";
+  imports = lib.optional isWSL nixos-wsl;
+  ########################################
+  # --- WSL integration ---
+  ########################################
+  wsl = lib.mkIf isWSL {
+    enable = true;
+    defaultUser = "nixos";
     useWindowsDriver = true;
     interop.register = true;
   };
-  users.users.nixos.extraGroups = [ "docker" ];
-  boot.isContainer = lib.mkIf isWSL true;
 
+  boot.isContainer = lib.mkIf isWSL true;
+  users.users.nixos.extraGroups = [ "docker" ];
+  ########################################
+  # --- Docker ---
+  ########################################
   virtualisation.docker = {
     enable = true;
     rootless = {
       enable = true;
       setSocketVariable = true;
     };
-    daemon.settings = {
-      runtimes.nvidia = {
-        path = "${pkgs.nvidia-docker}/bin/nvidia-container-runtime";
-      };
-    };
+    daemon.settings.runtimes.nvidia.path =
+      "${pkgs.nvidia-docker}/bin/nvidia-container-runtime";
   };
-  # hardware.nvidia-container-toolkit.enable = true;
-
+  ########################################
+  # --- Graphics / Pipewire ---
+  ########################################
   hardware.graphics = {
     enable = true;
-    extraPackages = with pkgs; [
-      mesa
-      mesa.drivers
-      vulkan-loader
-      vulkan-tools
-    ];
+    extraPackages = graphicsPackages;
   };
-  # This maps the WSLg Wayland/Pulse audio into NixOS
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
     pulse.enable = true;
   };
-
+  ########################################
+  # --- nix-ld ---
+  ########################################
   programs.nix-ld = {
     enable = true;
     package = pkgs.nix-ld-rs;
-    # Add the WSL-specific library path to nix-ld's search path
-    libraries = with pkgs; [
-      stdenv.cc.cc
-      mesa
-      libglvnd
-    ];
+    libraries = nixLdLibs;
   };
-
+  ########################################
+  # --- Environment ---
+  ########################################
   environment = {
-    # 1. Shell and System Variables
     variables = {
       EDITOR = "neovim";
       GALLIUM_DRIVER = "d3d12";
     };
-    # 2. Session-wide Variables (Best for WSL/GPU paths)
     sessionVariables = {
       LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
-      # LD_LIBRARY_PATH = "/usr/lib/wsl/lib:/run/opengl-driver/lib:$LD_LIBRARY_PATH";
       XDG_RUNTIME_DIR = "/mnt/wslg/runtime-dir";
       WAYLAND_DISPLAY = "wayland-0";
-      # WGPU_BACKEND = "gl";
       MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";
     };
-    # 3. System-wide Packages
-    systemPackages = with pkgs; [
-      git 
-      vim 
-      neovim 
-      wget
-      go 
-      gotools 
-      golangci-lint
-      vulkan-tools
-      pulseaudio 
-      pipewire 
-      xorg.xhost
-      glxinfo
-      helixPkg
-    ];
+    systemPackages = commonPackages;
   };
 }
