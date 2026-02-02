@@ -1,4 +1,4 @@
-{ inputs, system, username }:
+{ inputs, system, username, stateVersion }:
 
 let
   # Import modules from inputs
@@ -11,15 +11,15 @@ let
   wslSystemConfigurationModule = ./system-configuration.nix;
 
   # Inline WSL-specific settings
-  wslSettingsModule = { pkgs, config, ... }: {
-    system.stateVersion = "24.11";
+  wslSettingsModule = {
+    system.stateVersion = stateVersion;
     wsl.enable = true;
   };
 
 in
   inputs.nixpkgs.lib.nixosSystem {
     inherit system;
-    specialArgs = { inherit inputs username; };
+    specialArgs = { inherit inputs username stateVersion; };
     modules = [
       wslModule 
       wslSettingsModule

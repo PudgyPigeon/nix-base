@@ -1,8 +1,6 @@
-{ config, lib, pkgs, inputs, username, ... }:
+{ config, lib, pkgs, inputs, username, stateVersion, ... }:
 
-let
-  isWSL = builtins.pathExists "/proc/sys/fs/binfmt_misc/WSLInterop";
-  
+let  
   nixLdLibs = with pkgs; [
     stdenv.cc.cc
     mesa
@@ -12,15 +10,11 @@ let
   ];
 
 in {
-  system.stateVersion = "24.11";
-
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
   ########################################
   # --- WSL integration ---
   ########################################
-  wsl = lib.mkIf isWSL {
-    enable = true;
+  wsl = {
     defaultUser = username;
     useWindowsDriver = true;
     interop.register = true;

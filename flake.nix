@@ -11,14 +11,19 @@
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
+      stateVersion = "24.11";
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
       systemMap = import ./hosts/system-map.nix;
-      mkHost = username: kind: (systemMap { inherit inputs system username; }).${kind};
+
+      mkHost = username: kind: (systemMap { 
+        inherit inputs system username stateVersion; 
+      }).${kind};
+
     in {  
       formatter.${system} = pkgs.nixpkgs-fmt;
-      
+
       nixosConfigurations = {
         wsl = mkHost "nixos" "wsl";
       };
