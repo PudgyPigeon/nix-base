@@ -1,26 +1,13 @@
-{ config, lib, pkgs, nixpkgs, nixos-wsl, inputs, ... }:
+{ config, lib, pkgs, inputs, username, ... }:
 
 let
   isWSL = builtins.pathExists "/proc/sys/fs/binfmt_misc/WSLInterop";
-  helixPkg = inputs.helix.packages.${pkgs.system}.helix;
-
-  commonPackages = with pkgs; [
-    git vim neovim wget
-    go gotools golangci-lint
-    vulkan-tools pulseaudio pipewire
-    xorg.xhost glxinfo
-    helixPkg direnv nix-direnv
-  ];
-
-  graphicsPackages = with pkgs; [
-    vulkan-loader vulkan-tools
-  ];
-
+  
   nixLdLibs = with pkgs; [
     stdenv.cc.cc
     mesa
     libglvnd
-    vulkan-loader # Added for Vulkan support in binaries
+    vulkan-loader 
     xorg.libX11
   ];
 
@@ -29,27 +16,24 @@ in {
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
-
-  imports = lib.optional isWSL nixos-wsl;
-
-  # This "hooks" direnv into your shell and enables the Nix caching
-  programs.direnv.enable = true;
-  programs.direnv.nix-direnv.enable = true;
   ########################################
   # --- WSL integration ---
   ########################################
   wsl = lib.mkIf isWSL {
     enable = true;
-    defaultUser = "nixos";
+    defaultUser = username;
     useWindowsDriver = true;
     interop.register = true;
   };
 
-  boot.isContainer = lib.mkIf isWSL true;
-  users.users.nixos.extraGroups = [ "docker" ];
+  # Group permissions at system level
+  users.users.${username} = {
+    isNormalUser = true;
+    extraGroups = [ "docker" "wheel" "video"];
+  };
 
   ########################################
-  # --- Docker ---
+  # --- Docker (System Daemon) ---
   ########################################
   virtualisation.docker = {
     enable = true;
@@ -57,6 +41,7 @@ in {
       enable = true;
       setSocketVariable = true;
     };
+    # Critical for NVIDIA/Mesa setup
     daemon.settings.runtimes.nvidia.path =
       "${pkgs.nvidia-docker}/bin/nvidia-container-runtime";
   };
@@ -66,7 +51,8 @@ in {
   ########################################
   hardware.graphics = {
     enable = true;
-    extraPackages = graphicsPackages;
+    # Drivers/Loaders at system level
+    extraPackages = [ pkgs.vulkan-loader ];
   };
 
   services.pipewire = {
@@ -76,7 +62,7 @@ in {
   };
 
   ########################################
-  # --- nix-ld ---
+  # --- nix-ld (System Linker) ---
   ########################################
   programs.nix-ld = {
     enable = true;
@@ -85,22 +71,24 @@ in {
   };
 
   ########################################
-  # --- Environment ---
+  # --- Environment (System-wide) ---
   ########################################
   environment = {
-    variables = {
-      # EDITOR = "neovim";
-      # This tells Mesa to use the D3D12 translation layer
-      GALLIUM_DRIVER = "d3d12";
-    };
+    variables = {};
     sessionVariables = {
-      # Tells Nix where the Windows-side .so files are
-      LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
-      # These link to the WSLg graphics server
-      XDG_RUNTIME_DIR = "/mnt/wslg/runtime-dir";
+      LD_LIBRARY_PATH = "/usr/lib/wsl/lib\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}";
+      GALLIUM_DRIVER = "d3d12";
       WAYLAND_DISPLAY = "wayland-0";
+      XDG_RUNTIME_DIR = "/mnt/wslg/runtime-dir";
       MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";
     };
-    systemPackages = commonPackages;
+    
+    systemPackages = with pkgs; [
+      wget
+      vim
+      vulkan-tools
+      glxinfo
+      xorg.xhost
+    ];
   };
 }

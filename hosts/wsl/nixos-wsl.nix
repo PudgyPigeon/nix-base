@@ -1,35 +1,31 @@
-{ inputs, system }:
+{ inputs, system, username }:
 
 let
-  pkgs = inputs.nixpkgs.legacyPackages.${system};
-  helixPkg = inputs.helix.packages.${system}.default;
-
-  # Import modules as named variables
-  configurationModule = ./configuration.nix;
-  nixSettingsModule = ../../modules/nix-settings.nix;
+  # Import modules from inputs
   wslModule = inputs.nixos-wsl.nixosModules.default;
   homeManagerModule = inputs.home-manager.nixosModules.home-manager;
-  wslHomeManagerConfigModule = import ../../home/nixos-wsl.nix { username = "nixos"; };
+
+  # Local module paths
+  nixSettingsModule = ../../modules/nix-settings.nix;
+  wslHomeManagerConfigModule = ../../home/nixos-wsl.nix;
+  wslSystemConfigurationModule = ./system-configuration.nix;
 
   # Inline WSL-specific settings
   wslSettingsModule = { pkgs, config, ... }: {
     system.stateVersion = "24.11";
     wsl.enable = true;
   };
-  
-  nixosSystemInstance = inputs.nixpkgs.lib.nixosSystem {
-    inherit system;
-    specialArgs = { inherit inputs; };
-
-    modules = [
-      configurationModule
-      nixSettingsModule
-      wslModule 
-      wslSettingsModule
-      homeManagerModule
-      wslHomeManagerConfigModule
-    ];
-  };
 
 in
-  nixosSystemInstance
+  inputs.nixpkgs.lib.nixosSystem {
+    inherit system;
+    specialArgs = { inherit inputs username; };
+    modules = [
+      wslModule 
+      wslSettingsModule
+      nixSettingsModule
+      homeManagerModule
+      wslHomeManagerConfigModule
+      wslSystemConfigurationModule
+    ];
+  }

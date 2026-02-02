@@ -1,28 +1,33 @@
 {
-  description = "A simple NixOS flake with Golang and WSL support";
+  description = "Flake for NixOS";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
     helix.url = "github:helix-editor/helix/master";
+
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs:
+  outputs = { self, nixpkgs, ... }@inputs:
     let
-      # Set system and other packages
+      # Static values used across the flake
       system = "x86_64-linux";
-      pkgs = inputs.nixpkgs.legacyPackages.${system};
+      pkgs = nixpkgs.legacyPackages.${system};
+      systemMap = import ./hosts/system-map.nix;
+
       helixPkg = inputs.helix.packages.${system}.default;
+
       wslModule = inputs.nixos-wsl.nixosModules.default;
 
-      # Import host configuration as named variable
-      hostConfigs = import ./hosts/system-map.nix { inherit inputs system; };
-      formatterPkg = pkgs.nixpkgs-fmt;
+      # Takes the username and the 'kind' of system (e.g., wsl)
+      mkHost = username: kind: (systemMap { inherit inputs system username; }).${kind};
+    in {  
+      formatter.${system} = pkgs.nixpkgs-fmt;
 
-    in {
-      formatter.${system} = formatterPkg;
-      nixosConfigurations.wsl = hostConfigs.wsl;
+      nixosConfigurations = {
+        wsl = mkHost "nixos" "wsl";
+      };
     };
 }
