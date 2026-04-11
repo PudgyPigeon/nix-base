@@ -6,6 +6,9 @@ FLAKE_TARGET="wsl" # Match nixosConfigurations.wsl or nixosConfigurations.<anyva
 NIXOS_DIR="."
 
 echo "🔧 Bootstrapping NixOS with Flakes..."
+# NEW: Automatically clean CRLF before rebuilding
+echo "🧼 Sanitizing line endings in .nix files..."
+find . -name "*.nix" -type f -exec sed -i 's/\r$//' {} +
 
 echo "⚙️ Rebuilding system from flake using temporary NIX_CONFIG..."
 NIX_CONFIG="experimental-features = nix-command flakes" sudo nixos-rebuild switch --flake "$PWD#$FLAKE_TARGET"

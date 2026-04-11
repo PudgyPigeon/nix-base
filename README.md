@@ -13,3 +13,15 @@ Or you can manually run like this following example:
 ```
 sudo nixos-rebuild switch --flake .#wsl
 ```
+
+
+# Nvidia
+```
+# For CDI issues
+sudo nvidia-ctk cdi generate --mode=wsl --output=/etc/cdi/nvidia.yaml
+
+sudo systemctl restart docker
+
+export XDG_RUNTIME_DIR=/run/user/$(id -u)
+systemctl --user restart docker
+```

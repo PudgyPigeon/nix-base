@@ -6,7 +6,7 @@
       # Flakes stuff
       experimental-features = [ "nix-command" "flakes" ];
       auto-optimise-store = true;
-      
+
       allowed-users = [ "*" ];
       cores = 0;
       max-jobs = "auto";

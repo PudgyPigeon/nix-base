@@ -17,15 +17,15 @@ let
   };
 
 in
-  inputs.nixpkgs.lib.nixosSystem {
-    inherit system;
-    specialArgs = { inherit inputs username stateVersion; };
-    modules = [
-      wslModule 
-      wslSettingsModule
-      nixSettingsModule
-      homeManagerModule
-      wslHomeManagerConfigModule
-      wslSystemConfigurationModule
-    ];
-  }
+inputs.nixpkgs.lib.nixosSystem {
+  inherit system;
+  specialArgs = { inherit inputs username stateVersion; };
+  modules = [
+    wslModule
+    wslSettingsModule
+    nixSettingsModule
+    homeManagerModule
+    wslHomeManagerConfigModule
+    wslSystemConfigurationModule
+  ];
+}

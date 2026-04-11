@@ -11,17 +11,18 @@
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
-      stateVersion = "24.11";
+      stateVersion = "25.11";
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
       systemMap = import ./hosts/system-map.nix;
 
-      mkHost = username: kind: (systemMap { 
-        inherit inputs system username stateVersion; 
+      mkHost = username: kind: (systemMap {
+        inherit inputs system username stateVersion;
       }).${kind};
 
-    in {  
+    in
+    {
       formatter.${system} = pkgs.nixpkgs-fmt;
 
       nixosConfigurations = {

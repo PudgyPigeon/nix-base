@@ -8,7 +8,7 @@
     users.${username} = {
       home.username = username;
       home.homeDirectory = "/home/${username}";
-      home.stateVersion = stateVersion; 
+      home.stateVersion = stateVersion;
       home.sessionVariables = {
         EDITOR = "hx";
       };
@@ -33,8 +33,8 @@
 
       # --- Packages ---
       home.packages = with pkgs; [
-        git 
-        neovim 
+        git
+        neovim
         wget
         inputs.helix.packages.${pkgs.system}.helix
       ];
