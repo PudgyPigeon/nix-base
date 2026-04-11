@@ -13,11 +13,12 @@ in {
   nixpkgs.config.allowUnfree = true;
   ########################################
   # --- Security & AppArmor ---
+  # Stop NixOS from trying to generate its own DNS settings
+  # Point it to WSL mounted file 
   ########################################
-  security.apparmor = {
-    enable = true;
-    enableDefaultProfiles = true;
-  };
+  security.apparmor.enable = true;
+  networking.resolvconf.enable = false;
+  environment.etc."resolv.conf".source = lib.mkForce "/mnt/wsl/resolv.conf";
   ########################################
   # --- WSL integration ---
   ########################################
