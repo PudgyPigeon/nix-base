@@ -43,9 +43,17 @@ in {
       enable = true;
       setSocketVariable = true;
     };
-    # Critical for NVIDIA/Mesa setup
-    daemon.settings.runtimes.nvidia.path =
-      "${pkgs.nvidia-docker}/bin/nvidia-container-runtime";
+    daemon.settings = {
+      # This allows Kind to request the nvidia runtime by name
+      runtimes = {
+        nvidia = {
+          path = "${pkgs.nvidia-docker}/bin/nvidia-container-runtime";
+          runtimeArgs = [];
+        };
+      };
+      # Enables the newer Container Device Interface for better WSL passthrough
+      features = { "cdi" = true; }; 
+    };
   };
 
   ########################################
