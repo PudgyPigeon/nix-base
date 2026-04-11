@@ -12,6 +12,13 @@ let
 in {
   nixpkgs.config.allowUnfree = true;
   ########################################
+  # --- Security & AppArmor ---
+  ########################################
+  security.apparmor = {
+    enable = true;
+    enableDefaultProfiles = true;
+  };
+  ########################################
   # --- WSL integration ---
   ########################################
   wsl = {
@@ -78,6 +85,7 @@ in {
     };
     
     systemPackages = with pkgs; [
+      tmux
       wget
       vim
       vulkan-tools
