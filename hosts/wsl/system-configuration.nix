@@ -44,15 +44,12 @@ in {
       setSocketVariable = true;
     };
     daemon.settings = {
-      # This allows Kind to request the nvidia runtime by name
+      # This explicitly names the runtime so Docker recognizes '--runtime=nvidia'
       runtimes = {
         nvidia = {
           path = "${pkgs.nvidia-docker}/bin/nvidia-container-runtime";
-          runtimeArgs = [];
         };
       };
-      # Enables the newer Container Device Interface for better WSL passthrough
-      features = { "cdi" = true; }; 
     };
   };
 
