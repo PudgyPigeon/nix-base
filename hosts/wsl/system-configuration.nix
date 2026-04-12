@@ -21,6 +21,8 @@ in {
   # --- Security & Networking ---
   ########################################
   security.apparmor.enable = true; # Dis?abled to ensure no profile conflicts with GPU mounts
+  networking.resolvconf.enable = true;
+  networking.nameservers = [ "8.8.8.8" "1.1.1.1" ];
   environment.etc."resolv.conf".source = lib.mkForce "/mnt/wsl/resolv.conf";
 
   ########################################

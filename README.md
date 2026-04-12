@@ -30,3 +30,11 @@ sudo systemctl restart docker
 export XDG_RUNTIME_DIR=/run/user/$(id -u)
 systemctl --user restart docker
 ```
+
+
+
+# DNS
+In case DNS dies while changing settings:
+```
+sudo sh -c "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
+```
