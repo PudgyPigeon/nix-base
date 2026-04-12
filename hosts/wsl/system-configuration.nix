@@ -1,22 +1,26 @@
-{ config, lib, pkgs, inputs, username, stateVersion, ... }:
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  username,
+  stateVersion,
+  ...
+}: let
   nixLdLibs = with pkgs; [
     stdenv.cc.cc
     mesa
     libglvnd
     vulkan-loader
-    xorg.libX11
+    libX11
   ];
-in
-{
+in {
   nixpkgs.config.allowUnfree = true;
 
   ########################################
   # --- Security & Networking ---
   ########################################
-  security.apparmor.enable = false; # Disabled to ensure no profile conflicts with GPU mounts
-  networking.resolvconf.enable = false;
+  security.apparmor.enable = true; # Dis?abled to ensure no profile conflicts with GPU mounts
   environment.etc."resolv.conf".source = lib.mkForce "/mnt/wsl/resolv.conf";
 
   ########################################
@@ -30,7 +34,7 @@ in
 
   users.users.${username} = {
     isNormalUser = true;
-    extraGroups = [ "docker" "wheel" "video" "render" ];
+    extraGroups = ["docker" "wheel" "video" "render"];
   };
 
   ########################################
@@ -42,42 +46,70 @@ in
     rootless.enable = false;
     daemon.settings = {
       features.cdi = true;
-      cdi-spec-dirs = [ "/etc/cdi" "/var/run/cdi" ];
+      cdi-spec-dirs = ["/etc/cdi"];
+      runtimes = {
+        nvidia = {
+          path = "${pkgs.nvidia-container-toolkit}/bin/nvidia-container-runtime";
+        };
+      };
     };
   };
-
-  systemd.tmpfiles.rules = [ "d /etc/cdi 0755 root root -" ];
 
   ########################################
   # --- CDI Automation Service ---
   ########################################
-  systemd.services.nvidia-cdi-generator = {
+  systemd.user.services.nvidia-cdi-generator = {
+    description = "Generate NVIDIA CDI specification";
+    enable = true;
     serviceConfig = {
       Type = "oneshot";
-      # Systemd runs as root
-      ExecStart = "${pkgs.writeShellScript "gen-cdi" ''
-        rm -rf /etc/cdi/*
-        ${pkgs.nvidia-container-toolkit}/bin/nvidia-ctk cdi generate --output /etc/cdi/nvidia.yaml
-      ''}";
     };
+    # Using the absolute path to the tool ensures it works regardless of PATH
+    script = ''
+      # 1. Replicate: sudo mkdir -p /etc/cdi
+      # Note: You may need to 'sudo chown' this dir once if the user service lacks permissions
+      mkdir -p /etc/cdi
+
+      # 2. Replicate: sudo rm -rf /var/run/cdi/*
+      rm -rf /var/run/cdi/*
+
+      # 3. Replicate your manual command
+      ${pkgs.nvidia-container-toolkit.tools}/bin/nvidia-ctk cdi generate \
+        --output /etc/cdi/nvidia.yaml \
+        --nvidia-cdi-hook-path ${pkgs.nvidia-container-toolkit.tools}/bin/nvidia-cdi-hook
+    '';
+    # Match the 'wantedBy' to the session target to ensure it runs when you log in
+    wantedBy = ["default.target"];
   };
+  # Keep this rule for the Docker Runtime (the actual container start)
+  systemd.tmpfiles.rules = [
+    "L+ /lib64/ld-linux-x86-64.so.2 - - - - ${pkgs.glibc}/lib/ld-linux-x86-64.so.2"
+  ];
+  # systemd.tmpfiles.rules = [
+  #   # 1. The "Interpreter" link (Fixes the 'No such file' error for good)
+  #   "L+ /lib64/ld-linux-x86-64.so.2 - - - - ${pkgs.glibc}/lib/ld-linux-x86-64.so.2"
+
+  #   # 2. A persistent path for the hook (Optional, but makes the YAML cleaner)
+  #   "L+ /usr/bin/nvidia-cdi-hook - - - - ${pkgs.nvidia-container-toolkit.tools}/bin/nvidia-cdi-hook"
+  # ];
   ########################################
   # --- Hardware & Graphics ---
   ########################################
   hardware = {
     nvidia = {
-      open = false; # Proprietary is safer for the WSL2/Windows bridge
+      open = true; # Proprietary is safer for the WSL2/Windows bridge
       modesetting.enable = true;
     };
 
     nvidia-container-toolkit = {
       enable = true;
-      mount-nvidia-executables = false; # Prevents 'device or resource busy' in WSL2
+      disable-hooks = [];
+      mount-nvidia-executables = true; # Prevents 'device or resource busy' in WSL2
     };
 
     graphics = {
       enable = true;
-      extraPackages = with pkgs; [ vulkan-loader libglvnd ];
+      extraPackages = with pkgs; [vulkan-loader libglvnd];
     };
   };
 
@@ -87,7 +119,7 @@ in
   services = {
     xserver = {
       enable = true;
-      videoDrivers = [ "nvidia" ];
+      videoDrivers = ["nvidia"];
     };
     pipewire = {
       enable = true;
@@ -98,7 +130,7 @@ in
 
   programs.nix-ld = {
     enable = true;
-    package = pkgs.nix-ld-rs;
+    package = pkgs.nix-ld;
     libraries = nixLdLibs;
   };
 
@@ -116,8 +148,8 @@ in
       wget
       vim
       vulkan-tools
-      glxinfo
-      xorg.xhost
+      mesa-demos
+      xhost
       nvidia-container-toolkit
       dos2unix # Essential for fixing CRLF issues in the future
     ];

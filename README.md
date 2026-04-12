@@ -18,6 +18,11 @@ sudo nixos-rebuild switch --flake .#wsl
 # Nvidia
 ```
 # For CDI issues
+sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
+sudo systemctl restart docker
+sudo sed -i '/accept-nvidia-visible-devices-as-volume-mounts/c\accept-nvidia-visible-devices-as-volume-mounts = true' /etc/nvidia-container-runtime/config.toml
+
+
 sudo nvidia-ctk cdi generate --mode=wsl --output=/etc/cdi/nvidia.yaml
 
 sudo systemctl restart docker

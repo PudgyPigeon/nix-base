@@ -9,24 +9,28 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, ... }@inputs:
-    let
-      stateVersion = "25.11";
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+  outputs = {
+    self,
+    nixpkgs,
+    ...
+  } @ inputs: let
+    stateVersion = "25.11";
+    system = "x86_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
 
-      systemMap = import ./hosts/system-map.nix;
+    systemMap = import ./hosts/system-map.nix;
 
-      mkHost = username: kind: (systemMap {
+    mkHost = username: kind:
+      (systemMap {
         inherit inputs system username stateVersion;
-      }).${kind};
-
-    in
-    {
-      formatter.${system} = pkgs.nixpkgs-fmt;
-
-      nixosConfigurations = {
-        wsl = mkHost "nixos" "wsl";
+      }).${
+        kind
       };
+  in {
+    formatter.${system} = pkgs.alejandra;
+
+    nixosConfigurations = {
+      wsl = mkHost "nixos" "wsl";
     };
+  };
 }

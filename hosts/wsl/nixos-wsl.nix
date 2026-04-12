@@ -1,6 +1,9 @@
-{ inputs, system, username, stateVersion }:
-
-let
+{
+  inputs,
+  system,
+  username,
+  stateVersion,
+}: let
   # Import modules from inputs
   wslModule = inputs.nixos-wsl.nixosModules.default;
   homeManagerModule = inputs.home-manager.nixosModules.home-manager;
@@ -15,17 +18,16 @@ let
     system.stateVersion = stateVersion;
     wsl.enable = true;
   };
-
 in
-inputs.nixpkgs.lib.nixosSystem {
-  inherit system;
-  specialArgs = { inherit inputs username stateVersion; };
-  modules = [
-    wslModule
-    wslSettingsModule
-    nixSettingsModule
-    homeManagerModule
-    wslHomeManagerConfigModule
-    wslSystemConfigurationModule
-  ];
-}
+  inputs.nixpkgs.lib.nixosSystem {
+    inherit system;
+    specialArgs = {inherit inputs username stateVersion;};
+    modules = [
+      wslModule
+      wslSettingsModule
+      nixSettingsModule
+      homeManagerModule
+      wslHomeManagerConfigModule
+      wslSystemConfigurationModule
+    ];
+  }

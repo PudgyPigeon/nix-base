@@ -1,9 +1,15 @@
-{ config, pkgs, inputs, username, stateVersion, ... }:
 {
+  config,
+  pkgs,
+  inputs,
+  username,
+  stateVersion,
+  ...
+}: {
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
-    extraSpecialArgs = { inherit inputs username stateVersion; };
+    extraSpecialArgs = {inherit inputs username stateVersion;};
 
     users.${username} = {
       home.username = username;
@@ -36,7 +42,7 @@
         git
         neovim
         wget
-        inputs.helix.packages.${pkgs.system}.helix
+        inputs.helix.packages.${stdenv.hostPlatform.system}.helix
       ];
     };
   };
