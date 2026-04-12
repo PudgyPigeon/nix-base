@@ -8,7 +8,7 @@
   ...
 }: let
   nixLdLibs = with pkgs; [
-    stdenv.cc.cc
+    stdenv.cc.cc.lib
     mesa
     libglvnd
     vulkan-loader
@@ -81,17 +81,6 @@ in {
     # Match the 'wantedBy' to the session target to ensure it runs when you log in
     wantedBy = ["default.target"];
   };
-  # Keep this rule for the Docker Runtime (the actual container start)
-  systemd.tmpfiles.rules = [
-    "L+ /lib64/ld-linux-x86-64.so.2 - - - - ${pkgs.glibc}/lib/ld-linux-x86-64.so.2"
-  ];
-  # systemd.tmpfiles.rules = [
-  #   # 1. The "Interpreter" link (Fixes the 'No such file' error for good)
-  #   "L+ /lib64/ld-linux-x86-64.so.2 - - - - ${pkgs.glibc}/lib/ld-linux-x86-64.so.2"
-
-  #   # 2. A persistent path for the hook (Optional, but makes the YAML cleaner)
-  #   "L+ /usr/bin/nvidia-cdi-hook - - - - ${pkgs.nvidia-container-toolkit.tools}/bin/nvidia-cdi-hook"
-  # ];
   ########################################
   # --- Hardware & Graphics ---
   ########################################
@@ -135,8 +124,11 @@ in {
   };
 
   environment = {
-    sessionVariables = {
+    variables = {
       LD_LIBRARY_PATH = "/usr/lib/wsl/lib\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}";
+      NIX_LD_LIBRARY_PATH = "/run/current-system/sw/share/nix-ld/lib";
+    };
+    sessionVariables = {
       GALLIUM_DRIVER = "d3d12";
       WAYLAND_DISPLAY = "wayland-0";
       XDG_RUNTIME_DIR = "/mnt/wslg/runtime-dir";
