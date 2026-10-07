@@ -42,6 +42,7 @@
       programs.neovim = {
         enable = true;
         plugins = with pkgs.vimPlugins; [
+          # Themes
           catppuccin-nvim
           tokyonight-nvim
           gruvbox-material
@@ -51,6 +52,10 @@
           nord-nvim
           nightfox-nvim
           onedark-nvim
+          # Syntax & Navigation
+          nvim-treesitter.withAllGrammars
+          telescope-nvim
+          plenary-nvim
         ];
         extraLuaConfig = ''
           local config = vim.fn.stdpath("config") .. "/init.lua"
