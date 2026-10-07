@@ -38,10 +38,32 @@
         config.global.log_filter = "^$";
       };
 
+      # --- NVIM Config ---
+      programs.neovim = {
+        enable = true;
+        plugins = with pkgs.vimPlugins; [
+          catppuccin-nvim
+          tokyonight-nvim
+          gruvbox-material
+          gruvbox-nvim
+          kanagawa-nvim
+          rose-pine
+          nord-nvim
+          nightfox-nvim
+          onedark-nvim
+        ];
+        extraLuaConfig = ''
+          local config = vim.fn.stdpath("config") .. "/init.lua"
+          if vim.loop.fs_stat(config) then
+            dofile(config)
+          end
+        '';
+      };
+      xdg.configFile."nvim".source = ../dotfiles/nvim;
+
       # --- Packages ---
       home.packages = with pkgs; [
         git
-        neovim
         wget
         inputs.helix.packages.${stdenv.hostPlatform.system}.helix
       ];
