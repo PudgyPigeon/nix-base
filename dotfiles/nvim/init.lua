@@ -33,6 +33,12 @@ require("kanagawa").setup({
 })
 vim.cmd.colorscheme("kanagawa-wave")
 
+-- 1.6 TREESITTER CONFIG
+require("nvim-treesitter.config").setup({
+  ensure_installed = { "go", "lua", "markdown", "vim", "rust", "haskell", "erlang" },
+  highlight.enable = true,
+}) 
+
 -- 2. SEAMLESS WINDOW NAVIGATION SHORTCUTS
 vim.keymap.set({ "n", "t" }, "<A-h>", "<C-\\><C-n><C-w>h")
 vim.keymap.set({ "n", "t" }, "<A-j>", "<C-\\><C-n><C-w>j")
