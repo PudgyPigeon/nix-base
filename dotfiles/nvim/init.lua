@@ -27,23 +27,41 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- 1.5 THEME SETUP
-require("kanagawa").setup({
-  flavour = "wave",
+require("gruvbox").setup({
+  -- flavour = "wave",
   transparent_background = false,
 })
-vim.cmd.colorscheme("kanagawa-wave")
+vim.cmd.colorscheme("gruvbox")
 
 -- 1.6 TREESITTER CONFIG
 require("nvim-treesitter.config").setup({
   ensure_installed = { "go", "lua", "markdown", "vim", "rust", "haskell", "erlang" },
-  highlight.enable = true,
+  highlight = { enable = true}
 }) 
+
+-- 1.7 TELESCOPE CONFIG
+local themes = require("telescope.themes")
+
+vim.keymap.set("n", "<leader>th", function()
+  require("telescope.builtin").colorscheme(themes.get_dropdown({
+    enable_preview = true,
+    previewer = false,   -- Disable Telescope"s inner preview box (code in background is your preview)
+    prompt_title = "Theme",
+    winblend = 10,       -- Slight transparency (optional)
+    layout_config = {
+      width = 0.3,       -- Only 30% of screen width
+      height = 0.4,      -- Only 40% of screen height
+    },
+  }))
+end, { desc = "Browse colorschemes with live preview" })
 
 -- 2. SEAMLESS WINDOW NAVIGATION SHORTCUTS
 vim.keymap.set({ "n", "t" }, "<A-h>", "<C-\\><C-n><C-w>h")
 vim.keymap.set({ "n", "t" }, "<A-j>", "<C-\\><C-n><C-w>j")
 vim.keymap.set({ "n", "t" }, "<A-k>", "<C-\\><C-n><C-w>k")
 vim.keymap.set({ "n", "t" }, "<A-l>", "<C-\\><C-n><C-w>l")
+-- 2.1 ESCAPE TERMINAL WITH "ESCAPE" KEY INSTEAD
+vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
 
 -- 3. AUTOMATED TERMINAL INSERT MODE
 vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter", "TermOpen" }, {
@@ -60,41 +78,44 @@ vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     local argc = vim.fn.argc()
     local is_directory = false
+    local target_dir = nil
 
     if argc == 1 then
       local arg = vim.fn.argv(0)
       if vim.fn.isdirectory(arg) == 1 then
         is_directory = true
+        target_dir = arg
       end
     end
 
     if argc == 0 or is_directory then
-      -- 1. Open netrw on left
-      if argc == 0 then
-        vim.cmd("Ex")
+      -- 1. Main editor window starts in an empty buffer (or wipes the dir buffer)
+      vim.cmd("enew")
+      local editor_win = vim.api.nvim_get_current_win()
+
+      -- 2. Toggle Lexplore on the left
+      if target_dir then
+        vim.cmd("Lexplore " .. vim.fn.fnameescape(target_dir))
+      else
+        vim.cmd("Lexplore")
       end
 
-      -- 2. Open editor buffer to the right
-      vim.cmd("rightbelow vsplit")
-      local editor_win = vim.api.nvim_get_current_win()
-      vim.cmd("enew")
-
-      -- 3. Open terminal at the bottom
+      -- 3. Open terminal docked at the bottom across the screen
       vim.cmd("botright split | term")
       local term_win = vim.api.nvim_get_current_win()
 
-      -- 4. Defer resizing until all windows are drawn on screen
+      -- 4. Set sizing and return focus to editor
       vim.schedule(function()
-        -- Lock terminal height (e.g. 7 lines)
+        -- Lock terminal height
         if vim.api.nvim_win_is_valid(term_win) then
           vim.api.nvim_win_set_height(term_win, 15)
           vim.wo[term_win].winfixheight = true
         end
 
-        -- Find netrw window (top-left) and lock its narrow width (e.g. 16 columns)
+        -- Find leftmost window (Lexplore) and set width/winfixwidth
         vim.cmd("wincmd t")
         local netrw_win = vim.api.nvim_get_current_win()
-        if vim.api.nvim_win_is_valid(netrw_win) then
+        if vim.api.nvim_win_is_valid(netrw_win) and netrw_win ~= editor_win then
           vim.api.nvim_win_set_width(netrw_win, 35)
           vim.wo[netrw_win].winfixwidth = true
         end
