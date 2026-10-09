@@ -7,6 +7,8 @@ vim.opt.expandtab = true
 vim.opt.shiftwidth = 2
 vim.opt.tabstop = 2
 vim.opt.smartindent = true
+vim.opt.splitright = true
+vim.opt.splitbelow = true
 
 -- NETRW (FILE EXPLORER) BEHAVIOR
 vim.g.netrw_banner = 0              -- Hide bulky banner
