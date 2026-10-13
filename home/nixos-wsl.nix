@@ -16,7 +16,7 @@
       home.homeDirectory = "/home/${username}";
       home.stateVersion = stateVersion;
       home.sessionVariables = {
-        EDITOR = "hx";
+        EDITOR = "nvim";
       };
 
       # --- SSH Agent and Github keys ---
@@ -52,6 +52,7 @@
           nord-nvim
           nightfox-nvim
           onedark-nvim
+          cyberdream-nvim
           # Syntax & Navigation
           nvim-treesitter.withAllGrammars
           telescope-nvim

@@ -17,3 +17,6 @@ echo "🔍 Checking system-managed experimental features..."
 nix show-config | grep experimental-features
 
 echo "🧼 Clean-up: No longer need external nix.conf if flake sets features declaratively."
+
+echo "==> Running plugin audit in ephemeral environment..."
+nix-shell -p neovim ripgrep file findutils gnused coreutils --run ./audit_nvim.sh
