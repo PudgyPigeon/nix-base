@@ -1,22 +1,17 @@
+-- keymaps.lua
 local map = vim.keymap.set
 local layout = require("config.layout")
 
--- Seamless window navigation
+-- Window navigation
 map({ "n", "t" }, "<A-h>", "<C-\\><C-n><C-w>h", { desc = "Move to left window" })
 map({ "n", "t" }, "<A-j>", "<C-\\><C-n><C-w>j", { desc = "Move to lower window" })
 map({ "n", "t" }, "<A-k>", "<C-\\><C-n><C-w>k", { desc = "Move to upper window" })
 map({ "n", "t" }, "<A-l>", "<C-\\><C-n><C-w>l", { desc = "Move to right window" })
 
--- Escape terminal mode
+-- Escape terminal mode back to normal mode
 map("t", "<Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
 
--- In-window file explorer (opens file in THIS current window)
-map("n", "<leader>e", function()
-  vim.cmd("Explore")
-  vim.b.netrw_browse_split = 0
-end, { desc = "Open in-window file explorer" })
-
--- Toggle the same bottom terminal buffer created at startup
+-- Toggle the bottom terminal
 local function toggle_terminal()
   local term_buf = layout.term_buf
 

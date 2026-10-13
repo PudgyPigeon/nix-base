@@ -12,7 +12,7 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Automated terminal insert mode
+-- Automated terminal insert mode on focus
 vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter", "TermOpen" }, {
   pattern = "term://*",
   callback = function()
@@ -36,27 +36,22 @@ vim.api.nvim_create_autocmd("VimEnter", {
     end
 
     if argc == 0 or is_directory then
-      -- 1. Main editor window starts in an empty buffer
       vim.cmd("enew")
       local editor_win = vim.api.nvim_get_current_win()
 
-      -- 2. Open permanent Lexplore sidebar on the left
       if target_dir then
         vim.cmd("Lexplore " .. vim.fn.fnameescape(target_dir))
       else
         vim.cmd("Lexplore")
       end
 
-      -- Enforce Lexplore opens into adjacent editor split (split mode 4)
       vim.b.netrw_browse_split = 4
 
-      -- 3. Open terminal docked at the bottom across the screen
       vim.cmd("botright split | term")
       local term_win = vim.api.nvim_get_current_win()
       M.term_buf = vim.api.nvim_get_current_buf()
       vim.bo[M.term_buf].buflisted = false
 
-      -- 4. Set sizing and return focus to editor
       vim.schedule(function()
         if vim.api.nvim_win_is_valid(term_win) then
           vim.api.nvim_win_set_height(term_win, 15)
