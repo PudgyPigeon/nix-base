@@ -7,3 +7,10 @@ require("nvim-treesitter.config").setup({
     additional_vim_regex_highlighting = false,
   },
 })
+
+vim.api.nvim_create_autocmd("FileType", {
+  desc = "Enable Treesitter highlighting for supported buffers",
+  callback = function(args)
+    pcall(vim.treesitter.start, args.buf)
+  end,
+})
