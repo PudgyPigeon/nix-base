@@ -53,6 +53,7 @@
           nightfox-nvim
           onedark-nvim
           cyberdream-nvim
+	  everforest
           # Syntax & Navigation
           nvim-treesitter.withAllGrammars
           telescope-nvim
@@ -71,6 +72,8 @@
       home.packages = with pkgs; [
         git
         wget
+        gnupg
+        pinentry-curses
         inputs.helix.packages.${stdenv.hostPlatform.system}.helix
       ];
     };
