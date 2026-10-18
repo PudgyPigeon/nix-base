@@ -53,7 +53,7 @@
           nightfox-nvim
           onedark-nvim
           cyberdream-nvim
-	  everforest
+          everforest
           # Syntax & Navigation
           nvim-treesitter.withAllGrammars
           telescope-nvim
