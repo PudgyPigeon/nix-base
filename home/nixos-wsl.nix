@@ -58,6 +58,8 @@
           nvim-treesitter.withAllGrammars
           telescope-nvim
           plenary-nvim
+          # Formatting and IDE-ish things
+          mini-nvim
         ];
         extraLuaConfig = ''
           local config = vim.fn.stdpath("config") .. "/init.lua"
