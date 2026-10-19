@@ -12,6 +12,7 @@
   nixSettingsModule = ../../modules/nix-settings.nix;
   wslHomeManagerConfigModule = ../../home/nixos-wsl.nix;
   wslSystemConfigurationModule = ./system-configuration.nix;
+  nvidiaHardwareConfiguration = ../../modules/hardware/nvidia.nix;
 
   # Inline WSL-specific settings
   wslSettingsModule = {
@@ -29,5 +30,6 @@ in
       homeManagerModule
       wslHomeManagerConfigModule
       wslSystemConfigurationModule
+      nvidiaHardwareConfiguration
     ];
   }
